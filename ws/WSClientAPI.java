@@ -156,4 +156,34 @@ public class WSClientAPI
 		return(response.toString());
 		
     } // newOrder
+
+	/********************************************************************************
+	* Description: Deletes the order based on the provided id from the
+	*              orderinfo database.
+	* Parameters: id - The ID of the order to delete
+	* Returns: String - The response from the server after attempting to delete the order
+	********************************************************************************/
+	public String deleteOrder(String id) throws Exception {
+		// Set up the URL for the DELETE request
+		String url = "http://localhost:3000/api/orders/" + id;
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+		// Specify that this is a DELETE request
+		con.setRequestMethod("DELETE");
+
+		// Set up a buffer to read the response from the server
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		// Loop through the input and build the response string.
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close(); // When done, close the stream.
+
+		return(response.toString());
+	}
+
 } // WSClientAPI

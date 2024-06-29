@@ -59,6 +59,7 @@ public class OrdersUI
 			System.out.println( "1: Retrieve all orders in the order database." );
 			System.out.println( "2: Retrieve an order by ID." );
 			System.out.println( "3: Add a new order to the order database." );				
+			System.out.println( "4: Delete an order from the order database." );				
 			System.out.println( "X: Exit\n" );
 			System.out.print( "\n>>>> " );
 			option = keyboard.next().charAt(0);	
@@ -181,6 +182,43 @@ public class OrdersUI
 				} else {
 
 					System.out.println("\nOrder not created...");
+				}
+
+				System.out.println("\nPress enter to continue..." );
+				c.readLine();
+
+				option = ' '; //Clearing option. This incase the user enterd X/x the program will not exit.
+
+			} // if
+			//////////// option 4 ////////////
+
+			if ( option == '4' )
+			{
+				// Here we delete an order entry from the database
+				System.out.println("Enter orderID:");
+				String orderID = keyboard.nextLine();
+
+				System.out.println("\nPress 'y' to delete this order:");
+
+				option = keyboard.next().charAt(0);
+
+				if (( option == 'y') || (option == 'Y'))
+				{
+					try
+					{
+						System.out.println("\nDeleting order...");
+						response = api.deleteOrder(orderID);
+						System.out.println(response);
+
+					} catch(Exception e) {
+
+						System.out.println("Request failed:: " + e);
+
+					}
+
+				} else {
+
+					System.out.println("\nOrder not deleted ...");
 				}
 
 				System.out.println("\nPress enter to continue..." );

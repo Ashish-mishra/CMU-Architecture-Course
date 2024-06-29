@@ -58,6 +58,7 @@ public class OrdersUI
 			System.out.println( "1: Retrieve all orders in the order database." );
 			System.out.println( "2: Retrieve an order by ID." );
 			System.out.println( "3: Add a new order to the order database." );				
+			System.out.println( "4: Delete an order by ID." );				
 			System.out.println( "X: Exit\n" );
 			System.out.print( "\n>>>> " );
 			option = keyboard.next().charAt(0);	
@@ -186,6 +187,27 @@ public class OrdersUI
 				c.readLine();
 
 				option = ' '; //Clearing option. This incase the user enterd X/x the program will not exit.
+
+			} // if
+
+			//////////// option 4 ////////////
+
+			if ( ( option == '4' )) {
+				System.out.println("\nEnter the Order ID you wish to delete:");
+				String orderId = c.readLine(); // Assuming 'c' is your Console object
+
+				// Assuming deleteOrder now returns a JSON string response
+				try {
+					String deleteResponse = api.deleteOrder(orderId);
+					System.out.println(deleteResponse);
+				} catch (Exception e) {
+					System.out.println("Failed to delete the record from the server." + e);
+				}
+
+				System.out.println("\nPress enter to continue..." );
+				c.readLine();
+
+				option = ' '; // Clearing option
 
 			} // if
 

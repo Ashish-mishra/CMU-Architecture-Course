@@ -106,4 +106,23 @@ public class MSClientAPI
            return(response);	
     }
 
+	/********************************************************************************
+	* Description: Deletes the specified order from the orderinfo database
+	* Parameters: String orderID - the ID of the order to delete
+	* Returns: String that contains the status of the delete operation
+	********************************************************************************/
+	public String deleteOrder(String orderID) throws Exception
+	{
+		// Get the registry entry for DeleteServices service
+		String entry = registry.getProperty("DeleteServices");
+		String host = entry.split(":")[0];
+		String port = entry.split(":")[1];
+		// Get the RMI registry
+		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+		DeleteServicesAI obj = (DeleteServicesAI) reg.lookup("DeleteServices"); 
+		String response = obj.deleteOrder(orderID);
+		return(response);	
+	}
+
+	
 }
