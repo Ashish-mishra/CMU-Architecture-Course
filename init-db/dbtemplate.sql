@@ -34,6 +34,24 @@ CREATE TABLE `orders` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `users` (
+  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(30) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Dumping data for table `orders`
 --
 

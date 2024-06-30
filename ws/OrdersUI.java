@@ -19,7 +19,10 @@
 *
 ******************************************************************************************************************/
 
+import java.util.Arrays;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.io.Console;
@@ -43,6 +46,7 @@ public class OrdersUI
 		DateTimeFormatter dtf = null;				// Date object formatter
 		LocalDate localDate = null;					// Date object
 		WSClientAPI api = new WSClientAPI();	// RESTful api object
+		//String authToken = null; 					// JWT token for user authentication
 
 		/////////////////////////////////////////////////////////////////////////////////
 		// Main UI loop
@@ -59,7 +63,9 @@ public class OrdersUI
 			System.out.println( "2: Retrieve an order by ID." );
 			System.out.println( "3: Add a new order to the order database." );				
 			System.out.println( "4: Delete an order by ID." );				
-			System.out.println( "X: Exit\n" );
+			System.out.println( "5: Register a new user." );				
+			System.out.println( "6: Login and get credentials" );				
+			System.out.println( "X: Logout and Exit\n" );
 			System.out.print( "\n>>>> " );
 			option = keyboard.next().charAt(0);	
 			keyboard.nextLine();	// Removes data from keyboard buffer. If you don't clear the buffer, you blow 
@@ -211,6 +217,109 @@ public class OrdersUI
 
 			} // if
 
+			//////////// option 5 ////////////
+			if (option == '5') {
+				System.out.println("\nRegister a new user:");
+				System.out.println("Enter userName:");
+				String userName = keyboard.nextLine();
+			
+				char[] passwordArray;
+				char[] verifyPasswordArray;
+				do {
+					System.out.println("Enter password:");
+					passwordArray = System.console().readPassword();
+					System.out.println("Retype password for verification:");
+					verifyPasswordArray = System.console().readPassword();
+					if (!Arrays.equals(passwordArray, verifyPasswordArray)) {
+						System.out.println("Passwords do not match. Please try again.");
+					}
+				} while (!Arrays.equals(passwordArray, verifyPasswordArray));
+			
+				String password = new String(passwordArray);
+				Arrays.fill(passwordArray, ' '); // Clear from memory for security
+			
+				// Assuming there's a method in api to register a new user
+				try {
+					String registerResponse = api.registerUser(userName, password);
+					System.out.println(registerResponse);
+				} catch (Exception e) {
+					System.out.println("Failed to register a new user." + e);
+				}
+			
+				System.out.println("\nPress enter to continue...");
+				keyboard.nextLine(); // Assuming 'keyboard' is a Scanner reading System.in
+			
+				option = ' '; // Clearing option
+			}
+			
+			// Option 6: User login
+			if (option == '6') {
+				System.out.println("Please enter your username:");
+				String userName = System.console().readLine();
+
+				System.out.println("Please enter your password:");
+				char[] passwordArray = System.console().readPassword();
+
+				String password = new String(passwordArray);
+				Arrays.fill(passwordArray, ' '); // Clear from memory for security
+
+				try {
+					// Assuming api.loginUser returns a JWT token as a String
+					System.out.println("sending login request with username: " + userName + " and password: " + password);
+
+					String loginResponse = api.loginUser(userName, password);
+					System.out.println("Login successful." + loginResponse);
+
+					// Save the JWT token in memory for subsequent API calls
+					// Assuming there's a global variable 'authToken' to store the JWT token
+					//authToken = loginResponse.toJSON().getString("Token");
+					// Regular expression to find the Token value
+					Pattern pattern = Pattern.compile("\"Token\":\"([^\"]*)\"");
+					Matcher matcher = pattern.matcher(loginResponse);
+
+					if (matcher.find()) {
+						String authToken = matcher.group(1); // Extract the Token value
+						System.out.println("Extracted Token: " + authToken);
+						api.setToken(authToken);
+					} else {
+						System.out.println("Token not found in the response.");
+					}
+
+
+				} catch (Exception e) {
+					System.out.println("Failed to login." + e);
+				}
+
+				System.out.println("\nPress enter to continue...");
+				keyboard.nextLine(); // Assuming 'keyboard' is a Scanner reading System.in
+
+				option = ' '; // Clearing option
+			}
+
+
+			// Option 7: User logout
+			if (option == '7') {
+				String authToken = api.getToken();
+				if (authToken != null && !authToken.isEmpty()) {
+					try {
+						// Assuming api.logoutUser takes the JWT token and invalidates it on the server
+						api.logoutUser();
+						System.out.println("Logout successful. You have been logged out.");
+
+						// Clear the authToken variable after successful logout
+						api.setToken("");
+					} catch (Exception e) {
+						System.out.println("Failed to logout." + e);
+					}
+				} else {
+					System.out.println("You are not logged in.");
+				}
+
+				System.out.println("\nPress enter to continue...");
+				keyboard.nextLine(); // Assuming 'keyboard' is a Scanner reading System.in
+
+				option = ' '; // Clearing option
+			}
 			//////////// option X ////////////
 
 			if ( ( option == 'X' ) || ( option == 'x' ))
