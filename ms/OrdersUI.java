@@ -60,7 +60,9 @@ public class OrdersUI
 			System.out.println( "2: Retrieve an order by ID." );
 			System.out.println( "3: Add a new order to the order database." );				
 			System.out.println( "4: Delete an order from the order database." );				
-			System.out.println( "X: Exit\n" );
+			System.out.println( "5: Register a new user." );				
+			System.out.println( "6: Login user and get token." );				
+			System.out.println( "X: Logout and Exit\n" );
 			System.out.print( "\n>>>> " );
 			option = keyboard.next().charAt(0);	
 			keyboard.nextLine();	// Removes data from keyboard buffer. If you don't clear the buffer, you blow 
@@ -228,10 +230,55 @@ public class OrdersUI
 
 			} // if
 
+			//////////// option 5 /////////////
+			if ( option == '5' )
+			{
+				System.out.println("Enter username:");
+                String username = keyboard.next(); // Read username input
+
+				char[] passwordArray = System.console().readPassword("Enter password: ");
+				String password = new String(passwordArray);
+				System.out.println("Re-enter password:");
+				char[] reenteredPasswordArray = System.console().readPassword("Re-enter password: ");
+				String reenteredPassword = new String(reenteredPasswordArray);
+				
+				if(!password.equals(reenteredPassword)) {
+					System.out.println("Passwords do not match. Please retry!");
+				}
+				else {
+					try {
+						String result = api.registerUser(username, password);
+						System.out.println(result);
+					} catch (Exception e) {
+						System.out.println("Registration failed: " + e.getMessage());
+					}
+				}
+
+
+			}
+			
+			//////////// option 6 /////////////
+			if ( option == '6' )
+			{
+				System.out.println("Enter username:");
+                String username = keyboard.next(); // Read username input
+
+				char[] passwordArray = System.console().readPassword("Enter password: ");
+				String password = new String(passwordArray);
+				try {
+					String result = api.loginUser(username, password);
+					System.out.println(result);
+				} catch (Exception e) {
+					System.out.println("Login failed: " + e.getMessage());
+				}
+			}
+
 			//////////// option X ////////////
 
 			if ( ( option == 'X' ) || ( option == 'x' ))
 			{
+				api.logoutUser();
+
 				// Here the user is done, so we set the Done flag and halt the system
 
 				done = true;

@@ -48,6 +48,22 @@ services:
       MYSQL_REMOTE_HOST: ms_mysql
       MYSQL_REMOTE_PORT: 3306        
 
+  auth:
+    image: ms_auth
+    container_name: ms_auth
+    build:
+      context: .
+      dockerfile: Dockerfile-as
+      args:
+        MYSQL_PASSWORD: foo
+    depends_on:
+      - mysql
+    environment:
+      RMI_REMOTE_HOST: ms_auth
+      RMI_REMOTE_PORT: 1096
+      MYSQL_REMOTE_HOST: ms_mysql
+      MYSQL_REMOTE_PORT: 3306        
+
 
   client:
     image: ms_client
@@ -66,7 +82,7 @@ services:
     image: mysql:5.7
     container_name: ms_mysql
     volumes:
-      - ./init-db:/docker-entrypoint-initdb.d
+      - ./init-db/dbtemplate.sql:/docker-entrypoint-initdb.d/dbtemplate.sql
       - ms_db:/var/lib/mysql
     environment:
       "MYSQL_ROOT_PASSWORD": foo

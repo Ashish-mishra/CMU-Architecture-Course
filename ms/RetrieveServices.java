@@ -20,13 +20,22 @@
 *	= MySQL
 	- orderinfo database 
 ******************************************************************************************************************/
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.rmi.RemoteException; 
 import java.rmi.server.UnicastRemoteObject;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.*;
+import java.util.Properties;
+
+
+
 
 public class RetrieveServices extends UnicastRemoteObject implements RetrieveServicesAI
-{ 
+{         
+    // Get the registry entry for DeleteServices service
     // Set up the JDBC driver name and database URL
     static final String JDBC_CONNECTOR = "com.mysql.jdbc.Driver";  
     static final String DB_URL = Configuration.getJDBCConnection();
@@ -66,13 +75,19 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
 
     } // main
 
-
     // Inplmentation of the abstract classes in RetrieveServicesAI happens here.
+
 
     // This method will return all the entries in the orderinfo database
 
-    public String retrieveOrders() throws RemoteException
+
+    public String retrieveOrders(String token) throws RemoteException
     {
+        // Check if authToken is valid
+        if (!isTokenValid(token)) {
+            return "Invalid Auth Token";
+        }
+
       	// Local declarations
 
         Connection conn = null;		// connection to the orderinfo database
@@ -149,8 +164,14 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
     // This method will returns the order in the orderinfo database corresponding to the id
     // provided in the argument.
 
-    public String retrieveOrders(String orderid) throws RemoteException
+    public String retrieveOrders( String token, String orderid) throws RemoteException
     {
+        // Check if authToken is valid
+        if (!isTokenValid(token)) {
+            return "Invalid Auth Token";
+        }
+
+        
       	// Local declarations
 
         Connection conn = null;		// connection to the orderinfo database
@@ -227,4 +248,35 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
 
     } //retrieve order by id
 
+
+    public boolean isTokenValid(String token) {
+       // Get the registry entry for DeleteServices service
+       Properties registry = null;
+       registry = new Properties();
+       try {
+        registry.load(new FileReader("registry.properties"));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+       String entry = registry.getProperty("AuthServices");
+       String host = entry.split(":")[0];
+       String port = entry.split(":")[1];
+   
+       try {
+           // Get the RMI registry
+           Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+           AuthServicesAI obj = (AuthServicesAI) reg.lookup("AuthServices");
+           return obj.isTokenValid(token);
+       } catch (Exception e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+       return false;
+   }
+
 } // RetrieveServices
+

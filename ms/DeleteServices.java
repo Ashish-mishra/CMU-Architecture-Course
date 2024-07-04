@@ -19,10 +19,16 @@
 *	= MySQL
 	- orderinfo database 
 ******************************************************************************************************************/
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.rmi.RemoteException; 
 import java.rmi.server.UnicastRemoteObject;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.*;
+import java.util.Properties;
+
 
 public class DeleteServices extends UnicastRemoteObject implements DeleteServicesAI
 { 
@@ -72,8 +78,12 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
 
     // This method deletes the entry from the ms_orderinfo database
 
-    public String deleteOrder(String orderID) throws RemoteException
+    public String deleteOrder(String token, String orderID) throws RemoteException
     {
+        if (!isTokenValid(token)) {
+            return "Invalid token";
+        }
+
       	// Local declarations
 
         Connection conn = null;		                 // connection to the orderinfo database
@@ -119,5 +129,35 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
         return(ReturnString);
 
     } 
+
+
+        public boolean isTokenValid(String token) {
+       // Get the registry entry for DeleteServices service
+       Properties registry = null;
+       registry = new Properties();
+       try {
+        registry.load(new FileReader("registry.properties"));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+       String entry = registry.getProperty("AuthServices");
+       String host = entry.split(":")[0];
+       String port = entry.split(":")[1];
+   
+       try {
+           // Get the RMI registry
+           Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+           AuthServicesAI obj = (AuthServicesAI) reg.lookup("AuthServices");
+           return obj.isTokenValid(token);
+       } catch (Exception e) {
+           // TODO Auto-generated catch block
+           e.printStackTrace();
+       }
+       return false;
+   }
 
 } // DeleteServices

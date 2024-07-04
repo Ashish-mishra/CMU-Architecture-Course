@@ -31,6 +31,6 @@ public interface DeleteServicesAI extends java.rmi.Remote
 	* Returns an OK message or an error string.
 	*******************************************************/
 
-	String deleteOrder(String orderID) throws RemoteException;
+	String deleteOrder(String token, String orderID) throws RemoteException;
 
 }
