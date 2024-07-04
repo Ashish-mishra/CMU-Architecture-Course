@@ -33,7 +33,8 @@ public interface RetrieveServicesAI extends java.rmi.Remote
 	* format.
 	*******************************************************/
 
-	String retrieveOrders() throws RemoteException;
+	//String retrieveOrders() throws RemoteException;
+	String retrieveOrders(String token) throws RemoteException;
 
 	/*******************************************************
 	* Retrieves the order corresponding to the order id in 
@@ -41,6 +42,5 @@ public interface RetrieveServicesAI extends java.rmi.Remote
 	* returns the order in the form of a string in ordered 
 	* pairs format.
 	*******************************************************/	
-
-	String retrieveOrders(String id ) throws RemoteException;
+	String retrieveOrders(String token, String id ) throws RemoteException;
 }

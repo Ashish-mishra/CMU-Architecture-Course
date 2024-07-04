@@ -2,4 +2,5 @@
 
 java CreateServices &
 java RetrieveServices &
-java DeleteServices
+java DeleteServices &
+java AuthServices 
