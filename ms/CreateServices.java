@@ -28,6 +28,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Level;
 
 // Class to create a new order
 public class CreateServices extends UnicastRemoteObject implements CreateServicesAI
@@ -39,6 +40,8 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
     // Set up the orderinfo database credentials
     static final String USER = "root";
     static final String PASS = Configuration.MYSQL_PASSWORD;
+
+    private LoggerClient logger = new LoggerClient();
 
     // Do nothing constructor
     public CreateServices() throws RemoteException {}
@@ -77,6 +80,7 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
         Statement stmt = null;		                 // A Statement object is an interface that represents a SQL statement.
         String ReturnString = "Order Created";	     // Return string. If everything works you get an 'OK' message
         							                 // if not you get an error string
+        logger.log(Level.INFO.getName(), "Creating new Order");
         try
         {
             // Check if token passed is valid
@@ -110,6 +114,7 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
             conn.close();
 
         } catch(Exception e) {
+            logger.log(Level.SEVERE.getName(), "ERROR Creating new Order: " + e);
             ReturnString = e.toString();
         } 
         

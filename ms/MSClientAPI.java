@@ -105,6 +105,24 @@ public class MSClientAPI
     }
 
 	/********************************************************************************
+	* Description: Logs a new event to the log file
+	* Parameters: The log level (INFO, WARNING, SEVERE, ...) & the log message
+	* Returns: Nothing
+	********************************************************************************/
+
+	public void log(String level, String message) throws Exception
+	{
+		   // Get the registry entry for LogServices service
+		   String entry = registry.getProperty("LogServices");
+		   String host = entry.split(":")[0];
+		   String port = entry.split(":")[1];
+		   // Get the RMI registry
+		   Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+           LogServicesAI obj = (LogServicesAI) reg.lookup("LogServices"); 
+           obj.log(level, message);
+    }
+
+	/********************************************************************************
 	* Description: Deletes the specified order from the orderinfo database
 	* Parameters: String orderID - the ID of the order to delete
 	* Returns: String that contains the status of the delete operation

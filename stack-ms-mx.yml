@@ -30,7 +30,19 @@ services:
       RMI_REMOTE_HOST: ms_retrieve
       RMI_REMOTE_PORT: 1098
       MYSQL_REMOTE_HOST: ms_mysql
-      MYSQL_REMOTE_PORT: 3306        
+      MYSQL_REMOTE_PORT: 3306
+              
+  log:
+    image: ms_log
+    container_name: ms_log
+    build:
+      context: .
+      dockerfile: Dockerfile-ls
+      args:
+        MYSQL_PASSWORD: password
+    environment:
+      RMI_REMOTE_HOST: ms_log
+      RMI_REMOTE_PORT: 1097
 
   client:
     image: ms_client

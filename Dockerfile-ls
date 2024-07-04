@@ -1,0 +1,12 @@
+from openjdk:16
+
+WORKDIR /usr/app
+
+COPY ms/Configuration-tmplt.java ./
+RUN sed "s/<PASSWORD>/${MYSQL_PASSWORD}/g" < Configuration-tmplt.java > Configuration.java
+RUN rm Configuration-tmplt.java
+
+COPY  ms/LogServices.java ms/LogServicesAI.java ms/ms.log ./
+RUN javac *.java
+
+CMD java LogServices
