@@ -23,7 +23,6 @@
 import java.util.Properties;
 import java.io.FileReader;
 import java.io.IOException;
-import java.rmi.Naming; 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -32,7 +31,6 @@ public class MSClientAPI
 {
 	String response = null;
 	Properties registry = null;
-
 	String authToken = null;
 
 	public MSClientAPI() throws IOException {
@@ -52,7 +50,6 @@ public class MSClientAPI
 	* Parameters: None
 	* Returns: String of all the current orders in the orderinfo database
 	********************************************************************************/
-
 	public String retrieveOrders() throws Exception
 	{
 		   // Get the registry entry for RetrieveServices service
@@ -74,7 +71,6 @@ public class MSClientAPI
 	* Returns: String of all the order corresponding to the order id argument 
 	*          in the orderinfo database.
 	********************************************************************************/
-
 	public String retrieveOrders(String id) throws Exception
 	{
 		   // Get the registry entry for RetrieveServices service
@@ -94,7 +90,6 @@ public class MSClientAPI
 	* Parameters: None
 	* Returns: String that contains the status of the create operatation
 	********************************************************************************/
-
    	public String newOrder(String Date, String FirstName, String LastName, String Address, String Phone) throws Exception
 	{
 		   // Get the registry entry for CreateServices service
@@ -173,6 +168,9 @@ public class MSClientAPI
 		}
 	}
 
+	/********************************************************************************
+	* Description: Logs out the user from the system
+	********************************************************************************/
 	public void logoutUser() throws Exception{
 		// Get the registry entry for AuthServices service
 		String entry = registry.getProperty("AuthServices");
@@ -191,5 +189,4 @@ public class MSClientAPI
 			e.printStackTrace();
 		}
 	}
-
 }

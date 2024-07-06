@@ -41,7 +41,6 @@ function REST(){
 // in the "user" and "password" variables. Note that we also create a connection pool.
 // Note that I hardwared the server to the ws_orderinfo name. You will have to provide your own
 // password... you will probably use the same user. If not, you will have to change that as well.
-
 REST.prototype.connectMysql = function() {
     var self = this;
     var pool = mysql.createPool(mysqlConfig);
@@ -59,7 +58,6 @@ REST.prototype.connectMysql = function() {
 
 // Here is where we configure express and the body parser so the server
 // process can get parsed URLs. You really shouldn't have to tinker with this.
-
 REST.prototype.configureExpress = function(connection) {
       var self = this;
       app.use(bodyParser.urlencoded({ extended: true }));
@@ -74,7 +72,6 @@ REST.prototype.configureExpress = function(connection) {
 // If we get here, we are ready to start the server. Basically a listen() on 
 // port 3000. I hardwired it in this example, you can change it if you like.
 // I guess making it a variable would be better (javascript doesn't have #define).
-
 REST.prototype.startServer = function() {
       app.listen(3000,function(){
           console.log("Server Started at Port 3000.");
@@ -82,12 +79,10 @@ REST.prototype.startServer = function() {
 }
 
 // We land here if we can't connect to mysql
-
 REST.prototype.stop = function(err) {
     console.log("Issue connecting with mysql and/or connecting to the database.\n" + err);
     process.exit(1);
 }
 
 // Instantiation
-
 new REST();

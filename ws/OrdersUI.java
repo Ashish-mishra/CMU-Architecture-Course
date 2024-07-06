@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.io.Console;
 
+// Class to interact with the RESTful API
 public class OrdersUI
 {
 	public static void main(String args[])

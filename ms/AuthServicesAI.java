@@ -1,4 +1,3 @@
-
 /******************************************************************************************************************
 * File: AuthServicesAI.java
 * Course: 17655
@@ -21,6 +20,7 @@
 *  String register(String username, String password) - Registers an user with the system
 *  String login(String username, String password ) - Generates an authentication token for the user
 *  String logout() - Logs out the user from the system
+*  boolean isTokenValid(String token) - Checks if the token is valid
 
 * External Dependencies: None
 ******************************************************************************************************************/
@@ -32,14 +32,12 @@ public interface AuthServicesAI extends java.rmi.Remote
 	* Registers a new user with the system. 
 	* The user name and password are taken as input
 	*******************************************************/
-
 	String register(String username, String password) throws RemoteException;
 
 	/*******************************************************
 	* Generates an authentication token for the user.
 	* The user name and password are taken as input
 	*******************************************************/	
-
 	String login(String username, String password ) throws RemoteException;
 
 	/*******************************************************
@@ -47,5 +45,8 @@ public interface AuthServicesAI extends java.rmi.Remote
 	*******************************************************/
 	String logout(String token) throws RemoteException;
 	
+	/*******************************************************
+	 * Checks if the token is valid 
+	*******************************************************/
 	boolean isTokenValid(String token) throws RemoteException;
 }

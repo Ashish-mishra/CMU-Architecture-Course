@@ -29,8 +29,7 @@ import java.rmi.registry.Registry;
 import java.sql.*;
 import java.util.Properties;
 
-
-
+// Class to create a new order
 public class CreateServices extends UnicastRemoteObject implements CreateServicesAI
 { 
     // Set up the JDBC driver name and database URL
@@ -50,7 +49,6 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
     	// What we do is bind to rmiregistry, in this case localhost, port 1099. This is the default
     	// RMI port. Note that I use rebind rather than bind. This is better as it lets you start
     	// and restart without having to shut down the rmiregistry. 
-
         try 
         { 
             CreateServices obj = new CreateServices();
@@ -63,22 +61,14 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
             for (String name : boundNames) {
                 System.out.println("\t" + name);
             }
-            // Bind this object instance to the name RetrieveServices in the rmiregistry 
-            // Naming.rebind("//" + Configuration.getRemoteHost() + ":1099/CreateServices", obj); 
-
         } catch (Exception e) {
-
             System.out.println("CreateServices binding err: " + e.getMessage()); 
             e.printStackTrace();
         } 
-
     } // main
 
 
-    // Inplmentation of the abstract classes in RetrieveServicesAI happens here.
-
     // This method add the entry into the ms_orderinfo database
-
     public String newOrder(String token, String idate, String ifirst, String ilast, String iaddress, String iphone) throws RemoteException
     {
       	// Local declarations
@@ -89,52 +79,44 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
         							                 // if not you get an error string
         try
         {
+            // Check if token passed is valid
             if(!isTokenValid(token)) {
                 return "Invalid token";
             }
             
             // Here we load and initialize the JDBC connector. Essentially a static class
             // that is used to provide access to the database from inside this class.
-
             Class.forName(JDBC_CONNECTOR);
 
             //Open the connection to the orderinfo database
-
-            System.out.println("Connecting to database..." +  DB_URL);
             try {
                 conn = DriverManager.getConnection(DB_URL,USER,PASS);
             } catch (SQLException e) {
                 e.printStackTrace();
-                // Handle exception or log it
             }
             // Here we create the queery Execute a query. Not that the Statement class is part
             // of the Java.rmi.* package that enables you to submit SQL queries to the database
             // that we are connected to (via JDBC in this case).
-
             stmt = conn.createStatement();
-            
             String sql = "INSERT INTO orders(order_date, first_name, last_name, address, phone) VALUES (\""+idate+"\",\""+ifirst+"\",\""+ilast+"\",\""+iaddress+"\",\""+iphone+"\")";
 
             // execute the update
-
             stmt.executeUpdate(sql);
 
             // clean up the environment
-
             stmt.close();
             conn.close();
             stmt.close(); 
             conn.close();
 
         } catch(Exception e) {
-
             ReturnString = e.toString();
         } 
         
         return(ReturnString);
-
     } //retrieve all orders
 
+    // This method checks if the token is valid
     public boolean isTokenValid(String token) {
        // Get the registry entry for DeleteServices service
        Properties registry = null;

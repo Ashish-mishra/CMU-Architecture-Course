@@ -20,7 +20,10 @@
 *   router.get("/orders"... - returns a listing of everything in the ws_orderinfo database
 *   router.get("/orders/:order_id"... - returns the data associated with order_id
 *   router.post("/order?"... - adds the new customer data into the ws_orderinfo database
-*
+*   router.delete("/orders/:order_id"... - deletes the data associated with order_id)
+*   router.post("/api/users/register"... - registers a new user
+*   router.post("/api/users/login"... - logs in a user
+*   router.post("/api/users/logout"... - logs out a user
 * External Dependencies: mysql
 *
 ******************************************************************************************************************/
@@ -50,7 +53,6 @@ function isAuthenticated(req, res, next) {
 }
 
 // Assuming username is available and secretKey is defined
-
 function generateToken(username, secretKey) {
     const timestamp = new Date().getTime(); // Current time
     const toBeHashed = `${username}${timestamp}${secretKey}`;
@@ -66,13 +68,11 @@ function REST_ROUTER(router,connection) {
 
 // Here is where we define the routes. Essentially a route is a path taken through the code dependent upon the 
 // contents of the URL
-
 REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
     // GET with no specifier - returns system version information
     // req paramdter is the request object
     // res parameter is the response object
-
     router.get("/",function(req,res){
         res.json({"Message":"Orders Webservices Server Version 2.0"});
     });
@@ -86,7 +86,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // GET for /orders specifier - returns all orders currently stored in the database
     // req paramdter is the request object
     // res parameter is the response object
-  
     router.get("/orders", isAuthenticated, function(req,res){
         console.log("Getting all database entries..." );
         var query = "SELECT * FROM ??";
@@ -104,7 +103,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // GET for /orders/order id specifier - returns the order for the provided order ID
     // req paramdter is the request object
     // res parameter is the response object
-     
     router.get("/orders/:order_id", isAuthenticated, function(req,res){
         console.log("Getting order ID: ", req.params.order_id );
         var query = "SELECT * FROM ?? WHERE ??=?";
@@ -122,7 +120,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // POST for /orders?order_date&first_name&last_name&address&phone - adds order
     // req paramdter is the request object - note to get parameters (eg. stuff afer the '?') you must use req.body.param
     // res parameter is the response object 
-  
     router.post("/orders", isAuthenticated, function(req,res){
         //console.log("url:", req.url);
         //console.log("body:", req.body);
@@ -253,5 +250,4 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 }
 
 // The next line just makes this module available... think of it as a kind package statement in Java
-
 module.exports = REST_ROUTER;

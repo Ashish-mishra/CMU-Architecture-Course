@@ -17,7 +17,8 @@
 *	- MSlientAPI - this class provides an interface to a set of microservices
 *	- RetrieveServices - this is the server-side micro service for retrieving info from the ms_orders database
 *	- CreateServices - this is the server-side micro service for creating new orders in the ms_orders database
-*
+* 	- DeleteServices - this is the server-side micro service for deleting existing orders from ms_orders database
+*	- AuthServices - this is the server-side micro service for user authentication
 ******************************************************************************************************************/
 import java.lang.Exception;
 import java.util.Scanner;
@@ -52,7 +53,6 @@ public class OrdersUI
 		while (!done)
 		{	
 			// Here, is the main menu set of choices
-
 			System.out.println( "\n\n\n\n" );
 			System.out.println( "Orders Database User Interface: \n" );
 			System.out.println( "Select an Option: \n" );
@@ -69,11 +69,9 @@ public class OrdersUI
 									// through the next call to nextLine()
 
 			//////////// option 1 ////////////
-
 			if ( option == '1' )
 			{
 				// Here we retrieve all the orders in the ms_orderinfo database
-
 				System.out.println( "\nRetrieving All Orders::" );
 				try
 				{
@@ -81,24 +79,18 @@ public class OrdersUI
 					System.out.println(response);
 
 				} catch (Exception e) {
-
 					System.out.println("Request failed:: " + e);
-
 				}
 
 				System.out.println("\nPress enter to continue..." );
 				c.readLine();
-
 			} // if
 
 			//////////// option 2 ////////////
-
 			if ( option == '2' )
 			{
 				// Here we get the order ID from the user
-
 				error = true;
-
 				while (error)
 				{
 					System.out.print( "\nEnter the order ID: " );
@@ -109,36 +101,28 @@ public class OrdersUI
 						Integer.parseInt(orderid);
 						error = false;
 					} catch (NumberFormatException e) {
-
 						System.out.println( "Not a number, please try again..." );
 						System.out.println("\nPress enter to continue..." );
 
 					} // if
-
 				} // while
 
 				try
 				{
 					response = api.retrieveOrders(orderid);
 					System.out.println(response);
-
 				} catch (Exception e) {
-
 					System.out.println("Request failed:: " + e);
-					
 				}
 
 				System.out.println("\nPress enter to continue..." );
 				c.readLine();
-
 			} // if
 
 			//////////// option 3 ////////////
-
 			if ( option == '3' )
 			{
 				// Here we create a new order entry in the database
-
 				dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 				localDate = LocalDate.now();
 				date = localDate.format(dtf);
@@ -174,23 +158,17 @@ public class OrdersUI
 						System.out.println("\nCreating order...");
 						response = api.newOrder(date, first, last, address, phone);
 						System.out.println(response);
-
 					} catch(Exception e) {
-
 						System.out.println("Request failed:: " + e);
-
 					}
 
 				} else {
-
 					System.out.println("\nOrder not created...");
 				}
 
 				System.out.println("\nPress enter to continue..." );
 				c.readLine();
-
 				option = ' '; //Clearing option. This incase the user enterd X/x the program will not exit.
-
 			} // if
 			//////////// option 4 ////////////
 
@@ -201,9 +179,7 @@ public class OrdersUI
 				String orderID = keyboard.nextLine();
 
 				System.out.println("\nPress 'y' to delete this order:");
-
 				option = keyboard.next().charAt(0);
-
 				if (( option == 'y') || (option == 'Y'))
 				{
 					try
@@ -211,15 +187,10 @@ public class OrdersUI
 						System.out.println("\nDeleting order...");
 						response = api.deleteOrder(orderID);
 						System.out.println(response);
-
 					} catch(Exception e) {
-
 						System.out.println("Request failed:: " + e);
-
 					}
-
 				} else {
-
 					System.out.println("\nOrder not deleted ...");
 				}
 
@@ -227,7 +198,6 @@ public class OrdersUI
 				c.readLine();
 
 				option = ' '; //Clearing option. This incase the user enterd X/x the program will not exit.
-
 			} // if
 
 			//////////// option 5 /////////////
@@ -253,8 +223,6 @@ public class OrdersUI
 						System.out.println("Registration failed: " + e.getMessage());
 					}
 				}
-
-
 			}
 			
 			//////////// option 6 /////////////
@@ -274,20 +242,15 @@ public class OrdersUI
 			}
 
 			//////////// option X ////////////
-
 			if ( ( option == 'X' ) || ( option == 'x' ))
 			{
 				api.logoutUser();
 
 				// Here the user is done, so we set the Done flag and halt the system
-
 				done = true;
 				System.out.println( "\nDone...\n\n" );
 
 			} // if
-
 		} // while
-
   	} // main
-
 } // OrdersUI

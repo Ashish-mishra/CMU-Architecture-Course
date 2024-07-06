@@ -17,8 +17,8 @@
 * Parameters: None
 *
 * Internal Methods:
-*  String retrieveOrders() - gets and returns all the orders in the orderinfo database
-*  String retrieveOrders(String id) - gets and returns the order associated with the order id
+*  String retrieveOrders(String token) - gets and returns all the orders in the orderinfo database
+*  String retrieveOrders(String token, String id) - gets and returns the order associated with the order id
 *
 * External Dependencies: None
 ******************************************************************************************************************/
@@ -32,8 +32,6 @@ public interface RetrieveServicesAI extends java.rmi.Remote
 	* returns them in the form of a string in ordered pairs 
 	* format.
 	*******************************************************/
-
-	//String retrieveOrders() throws RemoteException;
 	String retrieveOrders(String token) throws RemoteException;
 
 	/*******************************************************

@@ -17,7 +17,7 @@
 * Parameters: None
 *
 * Internal Methods:
-*  String deleteOrder() - deletes an existing order in the orderinfo database
+*  String deleteOrder(String token, String id) - deletes an existing order in the orderinfo database
 *
 * External Dependencies: None
 ******************************************************************************************************************/
@@ -30,7 +30,5 @@ public interface DeleteServicesAI extends java.rmi.Remote
 	* Deletes an existing order from the table.
 	* Returns an OK message or an error string.
 	*******************************************************/
-
 	String deleteOrder(String token, String orderID) throws RemoteException;
-
 }

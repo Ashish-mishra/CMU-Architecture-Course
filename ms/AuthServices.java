@@ -15,6 +15,7 @@
 *  String register(String username, String password) - Registers an user with the system
 *  String login(String username, String password ) - Generates an authentication token for the user
 *  String logout() - Logs out the user from the system
+*  boolean isTokenValid(String token) - Checks if the token is valid
 *
 * External Dependencies: 
 *	- rmiregistry must be running to start this server
@@ -31,8 +32,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
-
+/* 
+ * Class to register, login and logout users.
+ */
 public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
 { 
     // Set up the JDBC driver name and database URL
@@ -50,8 +52,6 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
         authTokens.put(token, isValid);
     }
 
-
-
     // Do nothing constructor
     public AuthServices() throws RemoteException {}
 
@@ -61,7 +61,6 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
     	// What we do is bind to rmiregistry, in this case localhost, port 1099. This is the default
     	// RMI port. Note that I use rebind rather than bind. This is better as it lets you start
     	// and restart without having to shut down the rmiregistry. 
-
         try 
         { 
             AuthServices obj = new AuthServices();
@@ -76,17 +75,17 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
             }
 
         } catch (Exception e) {
-
             System.out.println("AuthServices binding err: " + e.getMessage()); 
             e.printStackTrace();
         } 
-
     } 
 
+    // Hashes the password using SHA-256
     public static String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(password.getBytes());
         byte[] byteData = md.digest();
+
         // Convert the byte to hex format
         StringBuilder hexString = new StringBuilder();
         for (byte aByteData : byteData) {
@@ -103,24 +102,21 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
     public String register(String username, String password) {
         try
         {
-            Class.forName(JDBC_CONNECTOR);
-
             //Open the connection to the orderinfo database
+            Class.forName(JDBC_CONNECTOR);
             Connection conn = DriverManager.getConnection(DB_URL,USER,PASS);
 
             // System.out.println("Creating statement...");
             Statement stmt = conn.createStatement();
-            
             String sql;
             sql = "SELECT * FROM orders";
             ResultSet rs = stmt.executeQuery(sql);
-
       
             String query = "INSERT INTO users (username, password) VALUES (?, ?)";
             String hashedPassword = hashPassword(password);
             try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
                 preparedStatement.setString(1, username);
-                preparedStatement.setString(2, hashedPassword); // In a real app, hash the password before storing it
+                preparedStatement.setString(2, hashedPassword); 
                 preparedStatement.executeUpdate();
                 return "User registered successfully.";
             }
@@ -130,7 +126,6 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
         }
     }
 
-    // Inplmentation of the abstract classes in AuthServicesAI happens here.
     // Generates an authentication token for the user
     public String login(String username, String password) {
         try {
@@ -179,6 +174,7 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
         }
     }
 
+    // Checks if the token is valid
     public boolean isTokenValid(String token) {
         System.out.println("Checking token: " + token);
         System.out.println("Token status: " + authTokens.getOrDefault(token, false));

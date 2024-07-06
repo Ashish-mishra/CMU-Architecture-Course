@@ -16,20 +16,20 @@
 *  String retrieveOrders(String id) - gets and returns the order associated with the order id
 *  String sendPost(String Date, String FirstName, String LastName, String Address, String Phone) - creates a new 
 *  order in the orderinfo database
+*  String deleteOrder(String id) - deletes an existing order in the orderinfo database
+*  String registerUser(String userName, String password) - registers a new user with the provided username and password
+*  String loginUser(String username, String password) - logs in an existing user with the provided username and password
+*  String logoutUser(String authToken) - logs out the current user
 *
 * External Dependencies: None
 ******************************************************************************************************************/
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 
 public class WSClientAPI
 {
@@ -50,11 +50,9 @@ public class WSClientAPI
 	* Parameters: None
 	* Returns: String of all the current orders in the orderinfo database
 	********************************************************************************/
-
 	public String retrieveOrders() throws Exception
 	{
 		// Set up the URL and connect to the node server
-
 		String url = "http://localhost:3000/api/orders";
 
 		URL obj = new URL(url);
@@ -64,7 +62,6 @@ public class WSClientAPI
 		con.setRequestMethod("GET");
 		con.setRequestProperty("Authorization", "Bearer " + token); 
 		int responseCode = con.getResponseCode();
-
 
 		//Set up a buffer to read the response from the server
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -80,7 +77,6 @@ public class WSClientAPI
 		in.close();
 
 		return(response.toString());
-
 	}
 	
 	/********************************************************************************
@@ -90,7 +86,6 @@ public class WSClientAPI
 	* Returns: String of all the order corresponding to the id argument in the 
 	*		   orderinfo database.
 	********************************************************************************/
-
 	public String retrieveOrders(String id) throws Exception
 	{
 		// Set up the URL and connect to the node server
@@ -110,7 +105,6 @@ public class WSClientAPI
 
 		//Loop through the input and build the response string.
 		//When done, close the stream.		
-
 		while ((inputLine = in.readLine()) != null) 
 		{
 			response.append(inputLine);
@@ -126,7 +120,6 @@ public class WSClientAPI
 	* Parameters: None
 	* Returns: String that contains the status of the POST operation
 	********************************************************************************/
-
    	public String newOrder(String Date, String FirstName, String LastName, String Address, String Phone) throws Exception
 	{
 		// Set up the URL and connect to the node server		
@@ -189,7 +182,6 @@ public class WSClientAPI
 		con.setRequestMethod("DELETE");
 		con.setRequestProperty("Authorization", "Bearer " + token); 
 
-
 		// Set up a buffer to read the response from the server
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
@@ -202,7 +194,7 @@ public class WSClientAPI
 		in.close(); // When done, close the stream.
 
 		return(response.toString());
-	}
+	} // deleteOrder
 
 
 	/********************************************************************************
@@ -250,7 +242,7 @@ public class WSClientAPI
 		in.close(); // When done, close the stream.
 
 		return(response.toString());
-	}
+	} // registerUser
 
 	/********************************************************************************
 	* Description: Issues a login token to existing users 
@@ -288,7 +280,7 @@ public class WSClientAPI
 		in.close(); // When done, close the stream.
 
 		return(response.toString());
-	}
+	} //loginUser
 
 	/********************************************************************************
 	* Description: Invalidates the login token for the current user
@@ -320,6 +312,6 @@ public class WSClientAPI
 		in.close(); // Close the BufferedReader
 
 		return(response.toString());
-	}
+	} // logoutUser
 	
 } // WSClientAPI
