@@ -20,12 +20,46 @@
 *   router.get("/orders"... - returns a listing of everything in the ws_orderinfo database
 *   router.get("/orders/:order_id"... - returns the data associated with order_id
 *   router.post("/order?"... - adds the new customer data into the ws_orderinfo database
-*
+*   router.delete("/orders/:order_id"... - deletes the data associated with order_id)
+*   router.post("/api/users/register"... - registers a new user
+*   router.post("/api/users/login"... - logs in a user
+*   router.post("/api/users/logout"... - logs out a user
 * External Dependencies: mysql
 *
 ******************************************************************************************************************/
 
 var mysql   = require("mysql");     //Database
+const secretKey = 'yourSecretKey'; // Use a secure, environment-specific key
+let activeTokens = {};
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+
+// Middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+    console.log("Checking if user is authenticated...");
+    const authHeader = req.headers.authorization;
+    let token;
+    if (authHeader) {
+        token = authHeader.split(" ")[1]; // Extract token from the Authorization header
+    }
+
+    if (token && activeTokens[token]) {
+        // Token is active, proceed to the next middleware or route handler
+        next();
+    } else {
+        // Token is missing, inactive, or invalid
+        res.status(401).json({"Error": true, "Message": "Unauthorized"});
+    }
+}
+
+// Assuming username is available and secretKey is defined
+function generateToken(username, secretKey) {
+    const timestamp = new Date().getTime(); // Current time
+    const toBeHashed = `${username}${timestamp}${secretKey}`;
+    const hash = crypto.createHash('sha256').update(toBeHashed).digest('hex');
+    return Buffer.from(hash).toString('base64');
+}
+
 
 function REST_ROUTER(router,connection) {
     var self = this;
@@ -34,22 +68,25 @@ function REST_ROUTER(router,connection) {
 
 // Here is where we define the routes. Essentially a route is a path taken through the code dependent upon the 
 // contents of the URL
-
 REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
     // GET with no specifier - returns system version information
     // req paramdter is the request object
     // res parameter is the response object
-
     router.get("/",function(req,res){
-        res.json({"Message":"Orders Webservices Server Version 1.0"});
+        res.json({"Message":"Orders Webservices Server Version 2.0"});
     });
     
+
+    router.get("/test", function(req, res) {
+        console.log("Test ...") 
+        res.json({"Error" : false, "Message" : "test passed !"});
+    });
+
     // GET for /orders specifier - returns all orders currently stored in the database
     // req paramdter is the request object
     // res parameter is the response object
-  
-    router.get("/orders",function(req,res){
+    router.get("/orders", isAuthenticated, function(req,res){
         console.log("Getting all database entries..." );
         var query = "SELECT * FROM ??";
         var table = ["orders"];
@@ -66,8 +103,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // GET for /orders/order id specifier - returns the order for the provided order ID
     // req paramdter is the request object
     // res parameter is the response object
-     
-    router.get("/orders/:order_id",function(req,res){
+    router.get("/orders/:order_id", isAuthenticated, function(req,res){
         console.log("Getting order ID: ", req.params.order_id );
         var query = "SELECT * FROM ?? WHERE ??=?";
         var table = ["orders","order_id",req.params.order_id];
@@ -84,8 +120,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // POST for /orders?order_date&first_name&last_name&address&phone - adds order
     // req paramdter is the request object - note to get parameters (eg. stuff afer the '?') you must use req.body.param
     // res parameter is the response object 
-  
-    router.post("/orders",function(req,res){
+    router.post("/orders", isAuthenticated, function(req,res){
         //console.log("url:", req.url);
         //console.log("body:", req.body);
         console.log("Adding to orders table ", req.body.order_date,",",req.body.first_name,",",req.body.last_name,",",req.body.address,",",req.body.phone);
@@ -101,8 +136,118 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         });
     });
 
+    // DELETE for /orders/:order_id
+    // deletes the order with the provided order ID
+    router.delete("/orders/:order_id", isAuthenticated, function(req, res) {
+        console.log("Deleting order ID: ", req.params.order_id);
+        var query = "DELETE FROM ?? WHERE ??=?";
+        var table = ["orders", "order_id", req.params.order_id];
+        query = mysql.format(query, table);
+        connection.query(query, function(err, result) {
+            if(err) {
+                res.json({"Error": true, "Message": "Error executing MySQL query"});
+            } else {
+                if(result.affectedRows == 0) {
+                    // No rows affected means no order found with that ID
+                    res.json({"Error": false, "Message": "No order found with the given ID"});
+                } else {
+                    res.json({"Error": false, "Message": "Order deleted successfully"});
+                }
+            }
+        });
+    });
+
+    // POST for /api/users/register
+    // Registers a new user with a username and password
+    router.post("/users/register", function(req, res) {
+        console.log("Registering user...");
+        var username = req.body.username;
+        var password = req.body.password;
+
+        // Basic validation
+        if (!username || !password) {
+            return res.status(400).json({"Error": true, "Message": "Username and password are required"});
+        }
+
+        // Hash the password before storing it
+        console.log("before bcrypt ", password);
+        var hashedPassword = bcrypt.hashSync(password, 10);
+        console.log("after bcrypt ", hashedPassword);
+
+        var query = "INSERT INTO ?? (??, ??) VALUES (?, ?)";
+        var table = ["users", "username", "password", username, hashedPassword];
+        query = mysql.format(query, table);
+
+        connection.query(query, function(err, result) {
+            if (err) {
+                res.json({"Error": true, "Message": "Error executing MySQL query"});
+            } else {
+                res.json({"Error": false, "Message": "User registered successfully"});
+            }
+        });
+    });
+    
+
+    // POST for /api/users/login
+    // Logs in a user with a username and password
+    router.post("/users/login", function(req, res) {
+        console.log("Body ...", req.body);
+        var username = req.body.username;
+        var password = req.body.password;
+
+        // Basic validation
+        if (!username || !password) {
+            return res.status(400).json({"Error": true, "Message": "Username and password are required"});
+        }
+
+        var query = "SELECT * FROM ?? WHERE ??=?";
+        var table = ["users", "username", username];
+        query = mysql.format(query, table);
+
+        console.log("Provided Usernmae: ", username, " Password: ", password);
+        connection.query(query, function(err, rows) {
+            if (err) {
+                res.json({"Error": true, "Message": "Error executing MySQL query"});
+            } else {
+                console.log("Rows length: ", rows.length);
+                console.log("Queried Password: ", rows[0].password);
+                console.log("Hashed Password: ", bcrypt.hashSync(password, 10));
+
+                if (rows.length == 1 && bcrypt.compareSync(password, rows[0].password)) {
+                    // Passwords match
+                    console.log("Login successful");
+                    console.log("Secret Key:", secretKey); // Debugging line
+                    console.log("Username:", rows[0].username); // Debugging line
+
+                    //const token = jwt.sign({"username": rows[0].username}, secretKey);
+                    const token = generateToken(rows[0].username, secretKey);
+                    console.log("Generated Token:", token);
+
+                    activeTokens[token] = true; // Mark the token as active
+                    res.json({"Error": false, "Message": "Login successful", "Token": token});
+                } else {
+                    // Authentication failed
+                    console.log("Login failed");
+                    res.json({"Error": true, "Message": "Invalid username or password"});
+                }
+            }
+        });
+    });
+
+    // POST for /api/users/logout
+    // LogsOut a currently loggedIn user
+    router.post("/users/logout", isAuthenticated, function(req, res) {
+        const token = req.headers.authorization.split(" ")[1]; // Assuming the token is sent in the Authorization header
+    
+        if (!token || !activeTokens[token]) {
+            return res.json({"Error": true, "Message": "Invalid or missing token"});
+        }
+    
+        // Mark the token as inactive
+        activeTokens[token] = false;
+        res.json({"Error": false, "Message": "Logout successful, token invalidated"});
+    });
 }
 
 // The next line just makes this module available... think of it as a kind package statement in Java
-
 module.exports = REST_ROUTER;

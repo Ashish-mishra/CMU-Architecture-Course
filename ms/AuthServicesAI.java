@@ -1,5 +1,5 @@
 /******************************************************************************************************************
-* File: RetrieveServicesAI.java
+* File: AuthServicesAI.java
 * Course: 17655
 * Project: Assignment A3
 * Copyright: Copyright (c) 2018 Carnegie Mellon University
@@ -17,28 +17,36 @@
 * Parameters: None
 *
 * Internal Methods:
-*  String retrieveOrders(String token) - gets and returns all the orders in the orderinfo database
-*  String retrieveOrders(String token, String id) - gets and returns the order associated with the order id
-*
+*  String register(String username, String password) - Registers an user with the system
+*  String login(String username, String password ) - Generates an authentication token for the user
+*  String logout() - Logs out the user from the system
+*  boolean isTokenValid(String token) - Checks if the token is valid
+
 * External Dependencies: None
 ******************************************************************************************************************/
-
 import java.rmi.*;
 		
-public interface RetrieveServicesAI extends java.rmi.Remote
+public interface AuthServicesAI extends java.rmi.Remote
 {
 	/*******************************************************
-	* Retrieves all orders from the orderinfo database and 
-	* returns them in the form of a string in ordered pairs 
-	* format.
+	* Registers a new user with the system. 
+	* The user name and password are taken as input
 	*******************************************************/
-	String retrieveOrders(String token) throws RemoteException;
+	String register(String username, String password) throws RemoteException;
 
 	/*******************************************************
-	* Retrieves the order corresponding to the order id in 
-	* method argument form the orderinfo database and 
-	* returns the order in the form of a string in ordered 
-	* pairs format.
+	* Generates an authentication token for the user.
+	* The user name and password are taken as input
 	*******************************************************/	
-	String retrieveOrders(String token, String id ) throws RemoteException;
+	String login(String username, String password ) throws RemoteException;
+
+	/*******************************************************
+	 * Logs out the user from the system
+	*******************************************************/
+	String logout(String token) throws RemoteException;
+	
+	/*******************************************************
+	 * Checks if the token is valid 
+	*******************************************************/
+	boolean isTokenValid(String token) throws RemoteException;
 }
