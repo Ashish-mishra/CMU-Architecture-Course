@@ -30,7 +30,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.*;
 import java.util.Properties;
-// Class to retrieve orders from the database
+import java.util.logging.Level;
+
+// Class to retrieve orders from the databaseimport java.util.logging.Level;
+
 public class RetrieveServices extends UnicastRemoteObject implements RetrieveServicesAI
 {         
     // Get the registry entry for DeleteServices service
@@ -41,6 +44,8 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
     // Set up the orderinfo database credentials
     static final String USER = "root";
     static final String PASS = Configuration.MYSQL_PASSWORD;
+
+    private LoggerClient logger = new LoggerClient();
 
     // Do nothing constructor
     public RetrieveServices() throws RemoteException {}
@@ -81,6 +86,7 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
         Statement stmt = null;		// A Statement object is an interface that represents a SQL statement.
         String ReturnString = "[";	// Return string. If everything works you get an ordered pair of data
         							// if not you get an error string
+        logger.log(Level.INFO.getName(), "Retriving All Orders");
         try
         {
             // Here we load and initialize the JDBC connector. Essentially a static class
@@ -119,6 +125,7 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
             stmt.close(); 
             conn.close();
         } catch(Exception e) {
+            logger.log(Level.SEVERE.getName(), "ERROR Retriving All Orders: " + e);
             ReturnString = e.toString();
         } 
         
@@ -140,6 +147,7 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
         Statement stmt = null;		// A Statement object is an interface that represents a SQL statement.
         String ReturnString = "[";	// Return string. If everything works you get an ordered pair of data
         							// if not you get an error string
+        logger.log(Level.INFO.getName(), "Retriving Orders By ID: " + orderid);
         try
         {
             // Here we load and initialize the JDBC connector. Essentially a static class
@@ -184,7 +192,7 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
             stmt.close(); 
             conn.close();
         } catch(Exception e) {
-
+            logger.log(Level.SEVERE.getName(), "ERROR Retriving Orders By ID: " + orderid + " " + e);
             ReturnString = e.toString();
         } 
 
