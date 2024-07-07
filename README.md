@@ -66,3 +66,14 @@ The assignment and installation instructions are given in "A3-2024" and "A3 Inst
 ### Delete an order by order_id
 * Select option 4
 * To delete an order by ID, enter the order id
+
+### Authentication and authorization
+* A new Authorisation service handles register/login/logout methods
+* Without authorization token, all rest api endpoints will return "Invalid token"
+* To obtain authorization tokem, user need to be registered using option 5 and then subsequently need to login using option 6
+* Authorization token is valid only in current session. Once OrdersUI client is exit using option X, token is also marked as invalid. On next execution of clientUI, login needs to be done again.
+
+### Logging
+* A new logger service provides a RMI log() method and  used in all existing services
+* Generated logs are appended in on-disk file ms.log
+* Logger method can be passed “LEVEL” and message to be logged. This can help in distinguishing errors and info messages.
