@@ -33,10 +33,24 @@ const secretKey = 'yourSecretKey'; // Use a secure, environment-specific key
 let activeTokens = {};
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
+
+// Specify the log file path
+const logFilePath = path.join(__dirname, 'ws.log');
+// Create a write stream for the log file
+const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
+
+// Function to log messages with different levels
+function logMessage(level, message) {
+    const timestamp = new Date().toISOString();
+    logStream.write(`[${timestamp}] [${level.toUpperCase()}] ${message}\n`);
+}
 
 // Middleware to check if the user is authenticated
 function isAuthenticated(req, res, next) {
     console.log("Checking if user is authenticated...");
+    logMessage('info', 'Authenticating user');
     const authHeader = req.headers.authorization;
     let token;
     if (authHeader) {
@@ -48,12 +62,14 @@ function isAuthenticated(req, res, next) {
         next();
     } else {
         // Token is missing, inactive, or invalid
+        logMessage('error', 'Authentication failed');
         res.status(401).json({"Error": true, "Message": "Unauthorized"});
     }
 }
 
 // Assuming username is available and secretKey is defined
 function generateToken(username, secretKey) {
+    logMessage('debug', 'Generating Token');
     const timestamp = new Date().getTime(); // Current time
     const toBeHashed = `${username}${timestamp}${secretKey}`;
     const hash = crypto.createHash('sha256').update(toBeHashed).digest('hex');
@@ -166,8 +182,11 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
         // Basic validation
         if (!username || !password) {
+            logMessage('error', `Missing Username or Password`);
             return res.status(400).json({"Error": true, "Message": "Username and password are required"});
         }
+
+        logMessage('info', `Registering User ${username}`);
 
         // Hash the password before storing it
         console.log("before bcrypt ", password);
@@ -182,6 +201,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
             if (err) {
                 res.json({"Error": true, "Message": "Error executing MySQL query"});
             } else {
+                logMessage('info', `User ${username} registered successfully`);
                 res.json({"Error": false, "Message": "User registered successfully"});
             }
         });
@@ -195,8 +215,10 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         var username = req.body.username;
         var password = req.body.password;
 
+        logMessage('info', `Logging in user ${username}`);
         // Basic validation
         if (!username || !password) {
+            logMessage('error', `Missing Username or Password`);
             return res.status(400).json({"Error": true, "Message": "Username and password are required"});
         }
 
@@ -215,6 +237,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
                 if (rows.length == 1 && bcrypt.compareSync(password, rows[0].password)) {
                     // Passwords match
+                    logMessage('info', `User ${username} logged in successfully`);
                     console.log("Login successful");
                     console.log("Secret Key:", secretKey); // Debugging line
                     console.log("Username:", rows[0].username); // Debugging line
@@ -242,6 +265,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         if (!token || !activeTokens[token]) {
             return res.json({"Error": true, "Message": "Invalid or missing token"});
         }
+
+        logMessage('info', `Logout successful`);
     
         // Mark the token as inactive
         activeTokens[token] = false;
