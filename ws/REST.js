@@ -50,7 +50,7 @@ function logMessage(level, message) {
 // Middleware to check if the user is authenticated
 function isAuthenticated(req, res, next) {
     console.log("Checking Authentication for user ");
-    logMessage('info', 'Authenticating user ');
+    // logMessage('info', 'Authenticating user ');
     const authHeader = req.headers.authorization;
     let token;
     if (authHeader) {
@@ -64,7 +64,7 @@ function isAuthenticated(req, res, next) {
         next();
     } else {
         // Token is missing, inactive, or invalid
-        logMessage('error', 'Authentication failed');
+        logMessage('error', 'Authentication failed. Please login to access the resources');
         res.status(401).json({"Error": true, "Message": "Unauthorized"});
     }
 }
@@ -118,7 +118,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 logMessage('error', "Error executing MySQL query");
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
-                logMessage('info', "Success executing MySQL query");
+                logMessage('info', "Orders retrieved successfully...");
                 res.json({"Error" : false, "Message" : "Success", "Orders" : rows});
             }
         });
@@ -137,7 +137,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 logMessage('error', "Error executing MySQL query");
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
-                logMessage('info', "Success executing MySQL query");
+                logMessage('info', "Order retrieved successfully...");
                 res.json({"Error" : false, "Message" : "Success", "Users" : rows});
             }
         });
@@ -158,7 +158,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 logMessage('error', "Error executing MySQL query");
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
-                logMessage('info', "Success executing MySQL query");
+                logMessage('info', "Order Added successfully...");
                 res.json({"Error" : false, "Message" : "User Added !"});
             }
         });
@@ -181,7 +181,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                     logMessage('error', "No order found with the given ID");
                     res.json({"Error": false, "Message": "No order found with the given ID"});
                 } else {
-                    logMessage('info', "Success executing MySQL query");
+                    logMessage('info', "Order deleted successfully");
                     res.json({"Error": false, "Message": "Order deleted successfully"});
                 }
             }
@@ -204,9 +204,9 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         logMessage('info', `Registering User ${username}`);
 
         // Hash the password before storing it
-        console.log("before bcrypt ", password);
+        // console.log("before bcrypt ", password);
         var hashedPassword = bcrypt.hashSync(password, 10);
-        console.log("after bcrypt ", hashedPassword);
+        // console.log("after bcrypt ", hashedPassword);
 
         var query = "INSERT INTO ?? (??, ??) VALUES (?, ?)";
         var table = ["users", "username", "password", username, hashedPassword];
@@ -247,15 +247,14 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 res.json({"Error": true, "Message": "Error executing MySQL query"});
             } else {
                 console.log("Rows length: ", rows.length);
-                console.log("Queried Password: ", rows[0].password);
-                console.log("Hashed Password: ", bcrypt.hashSync(password, 10));
+                // console.log("Queried Password: ", rows[0].password);
+                // console.log("Hashed Password: ", bcrypt.hashSync(password, 10));
 
                 if (rows.length == 1 && bcrypt.compareSync(password, rows[0].password)) {
                     // Passwords match
                     logMessage('info', `User ${username} logged in successfully`);
-                    console.log("Login successful");
-                    console.log("Secret Key:", secretKey); // Debugging line
-                    console.log("Username:", rows[0].username); // Debugging line
+                    console.log("Login successful for user ", username);
+                    // console.log("Secret Key:", secretKey); // Debugging line
 
                     const token = generateToken(rows[0].username, secretKey);
                     // console.log("Generated Token:", token);
