@@ -222,7 +222,7 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
            // Get the RMI registry
            Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
            AuthServicesAI obj = (AuthServicesAI) reg.lookup("AuthServices");
-           return obj.isTokenValid(token);
+           return obj.validateToken(token);
        } catch (Exception e) {
            // TODO Auto-generated catch block
            e.printStackTrace();

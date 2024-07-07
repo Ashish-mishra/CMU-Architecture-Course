@@ -30,7 +30,5 @@ public interface CreateServicesAI extends java.rmi.Remote
 	* Creates a new order from the provided arguments.
 	* Returns an OK message or an error string.
 	*******************************************************/
-
 	String newOrder(String token, String Date, String FirstName, String LastName, String Address, String Phone) throws RemoteException;
-
 }
