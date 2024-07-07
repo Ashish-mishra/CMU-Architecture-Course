@@ -266,10 +266,10 @@ public class OrdersUI
 
 				try {
 					// Assuming api.loginUser returns a JWT token as a String
-					System.out.println("sending login request with username: " + userName + " and password: " + password);
+					System.out.println("sending login request for username: " + userName);
 
 					String loginResponse = api.loginUser(userName, password);
-					System.out.println("Login successful." + loginResponse);
+					//System.out.println("Login successful.");
 
 					// Save the JWT token in memory for subsequent API calls
 					// Assuming there's a global variable 'authToken' to store the JWT token
@@ -280,10 +280,10 @@ public class OrdersUI
 
 					if (matcher.find()) {
 						String authToken = matcher.group(1); // Extract the Token value
-						System.out.println("Extracted Token: " + authToken);
+						System.out.println("Login Success. Token generated and marked active.");
 						api.setToken(authToken);
 					} else {
-						System.out.println("Token not found in the response.");
+						System.out.println("Login Failure. Token not found in the response.");
 					}
 
 
