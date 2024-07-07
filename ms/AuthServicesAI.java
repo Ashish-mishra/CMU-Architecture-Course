@@ -48,5 +48,5 @@ public interface AuthServicesAI extends java.rmi.Remote
 	/*******************************************************
 	 * Checks if the token is valid 
 	*******************************************************/
-	boolean isTokenValid(String token) throws RemoteException;
+	boolean validateToken(String token) throws RemoteException;
 }

@@ -31,7 +31,7 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-
+import java.util.logging.Level;
 /* 
  * Class to register, login and logout users.
  */
@@ -44,6 +44,8 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
     // Set up the orderinfo database credentials
     static final String USER = "root";
     static final String PASS = Configuration.MYSQL_PASSWORD;
+
+    private LoggerClient logger = new LoggerClient();
 
     //static String authToken = null;
     private static final Map<String, Boolean> authTokens = new HashMap<>();
@@ -137,6 +139,7 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
 
         try
         {
+            logger.log(Level.INFO.getName(), "Trying to log in user: " + username);
             //Open the connection to the orderinfo database
             Connection conn = DriverManager.getConnection(DB_URL,USER,PASS);
            
@@ -145,16 +148,20 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
                 preparedStatement.setString(1, username);
                 try (ResultSet rs = preparedStatement.executeQuery()) {
                     boolean hasResult = rs.next();
-                    System.out.println( " rs.getString(\"password\") = " + rs.getString("password") + " hashPassword(password) = " + hashPassword(password)+ "....");       
+                    // System.out.println( " rs.getString(\"password\") = " + rs.getString("password") + " hashPassword(password) = " + hashPassword(password)+ "....");       
 
                     if (hasResult && rs.getString("password").equals(hashPassword(password))) { 
-                        String authToken = UUID.randomUUID().toString();
+                        String authToken =  username + ":" + UUID.randomUUID().toString();
                         System.out.println("Generated token: " + authToken);
+
+                        logger.log(Level.INFO.getName(), "Log in success for user: " + username);
+ 
                         setTokenStatus(authToken, true);
                         return authToken;
                     }
                     else {
-                            System.out.println("Invalid password.");
+                        logger.log(Level.INFO.getName(), "Log in failed for user: " + username);
+                        System.out.println("Invalid password.");
                     }
                 }
             }
@@ -168,17 +175,29 @@ public class AuthServices extends UnicastRemoteObject implements AuthServicesAI
     public String logout(String authToken) {
         if (authToken != null) {
             setTokenStatus(authToken, false);
+            logger.log(Level.INFO.getName(), "LogOut success for user: " + extractUsernameFromToken(authToken));
             return "User logged out successfully.";
         } else {
+            logger.log(Level.INFO.getName(), "Logout failed for user: " + extractUsernameFromToken(authToken));
             return "No user is logged in.";
         }
     }
 
     // Checks if the token is valid
-    public boolean isTokenValid(String token) {
+    public boolean validateToken(String token) {
         System.out.println("Checking token: " + token);
-        System.out.println("Token status: " + authTokens.getOrDefault(token, false));
-        return authTokens.getOrDefault(token, false);
+        logger.log(Level.INFO.getName(), "Validating token for user: " + extractUsernameFromToken(token));
+        boolean tokenStatus = authTokens.getOrDefault(token, false);
+        System.out.println("is Token status valid ? " + tokenStatus);
+        return tokenStatus;
     }
 
+    // Method to extrack username from token
+    public String extractUsernameFromToken(String authToken) {
+        if (authToken != null && authToken.contains(":")) {
+            return authToken.split(":")[0];
+        } else {
+            return null; // or throw an exception if appropriate
+        }
+    }
 } // AuthServices

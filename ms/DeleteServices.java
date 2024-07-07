@@ -28,6 +28,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Level;
+
 
 // Class to delete an order
 public class DeleteServices extends UnicastRemoteObject implements DeleteServicesAI
@@ -39,6 +41,8 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
     // Set up the orderinfo database credentials
     static final String USER = "root";
     static final String PASS = Configuration.MYSQL_PASSWORD;
+
+    private LoggerClient logger = new LoggerClient();
 
     // Do nothing constructor
     public DeleteServices() throws RemoteException {}
@@ -94,6 +98,7 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
             // Here we create the queery Execute a query. Not that the Statement class is part
             // of the Java.rmi.* package that enables you to submit SQL queries to the database
             // that we are connected to (via JDBC in this case).
+            logger.log(Level.INFO.getName(), "Deleting Order: " + orderID);
             stmt = conn.createStatement();
             String sql = "DELETE FROM orders WHERE order_id = '" + orderID + "'";
             
@@ -107,6 +112,7 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
             conn.close();
 
         } catch(Exception e) {
+            logger.log(Level.SEVERE.getName(), "Error deleting order: " + e.toString());
             ReturnString = e.toString();
         } 
         
@@ -134,7 +140,7 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
             // Get the RMI registry
             Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
             AuthServicesAI obj = (AuthServicesAI) reg.lookup("AuthServices");
-            return obj.isTokenValid(token);
+            return obj.validateToken(token);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

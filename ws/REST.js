@@ -49,8 +49,8 @@ function logMessage(level, message) {
 
 // Middleware to check if the user is authenticated
 function isAuthenticated(req, res, next) {
-    console.log("Checking if user is authenticated...");
-    logMessage('info', 'Authenticating user');
+    console.log("Checking Authentication for user ");
+    logMessage('info', 'Authenticating user ');
     const authHeader = req.headers.authorization;
     let token;
     if (authHeader) {
@@ -59,6 +59,8 @@ function isAuthenticated(req, res, next) {
 
     if (token && activeTokens[token]) {
         // Token is active, proceed to the next middleware or route handler
+        console.log('Authentication successful for user ' + extractUsername(token));
+        logMessage('error', 'Authentication successful for user ' + extractUsername(token));
         next();
     } else {
         // Token is missing, inactive, or invalid
@@ -73,9 +75,14 @@ function generateToken(username, secretKey) {
     const timestamp = new Date().getTime(); // Current time
     const toBeHashed = `${username}${timestamp}${secretKey}`;
     const hash = crypto.createHash('sha256').update(toBeHashed).digest('hex');
-    return Buffer.from(hash).toString('base64');
+    const tokenWithUsername = `${username}:${Buffer.from(hash).toString('base64')}`;
+    return tokenWithUsername;
 }
 
+function extractUsername(tokenWithUsername) {
+    const [username] = tokenWithUsername.split(':');
+    return username;
+}
 
 function REST_ROUTER(router,connection) {
     var self = this;
@@ -93,7 +100,6 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
         res.json({"Message":"Orders Webservices Server Version 2.0"});
     });
     
-
     router.get("/test", function(req, res) {
         console.log("Test ...") 
         res.json({"Error" : false, "Message" : "test passed !"});
@@ -103,14 +109,16 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // req paramdter is the request object
     // res parameter is the response object
     router.get("/orders", isAuthenticated, function(req,res){
-        console.log("Getting all database entries..." );
+        logMessage('info', "Getting all database entries..." );
         var query = "SELECT * FROM ??";
         var table = ["orders"];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
+                logMessage('error', "Error executing MySQL query");
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
+                logMessage('info', "Success executing MySQL query");
                 res.json({"Error" : false, "Message" : "Success", "Orders" : rows});
             }
         });
@@ -120,14 +128,16 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // req paramdter is the request object
     // res parameter is the response object
     router.get("/orders/:order_id", isAuthenticated, function(req,res){
-        console.log("Getting order ID: ", req.params.order_id );
+        logMessage('info', "Getting order ID: ", req.params.order_id );
         var query = "SELECT * FROM ?? WHERE ??=?";
         var table = ["orders","order_id",req.params.order_id];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
+                logMessage('error', "Error executing MySQL query");
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
+                logMessage('info', "Success executing MySQL query");
                 res.json({"Error" : false, "Message" : "Success", "Users" : rows});
             }
         });
@@ -139,14 +149,16 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     router.post("/orders", isAuthenticated, function(req,res){
         //console.log("url:", req.url);
         //console.log("body:", req.body);
-        console.log("Adding to orders table ", req.body.order_date,",",req.body.first_name,",",req.body.last_name,",",req.body.address,",",req.body.phone);
+        logMessage('info',"Adding to orders table " + req.body.order_date + "," + req.body.first_name + "," + req.body.last_name + "," + req.body.address + "," + req.body.phone);
         var query = "INSERT INTO ??(??,??,??,??,??) VALUES (?,?,?,?,?)";
         var table = ["orders","order_date","first_name","last_name","address","phone",req.body.order_date,req.body.first_name,req.body.last_name,req.body.address,req.body.phone];
         query = mysql.format(query,table);
         connection.query(query,function(err,rows){
             if(err) {
+                logMessage('error', "Error executing MySQL query");
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
+                logMessage('info', "Success executing MySQL query");
                 res.json({"Error" : false, "Message" : "User Added !"});
             }
         });
@@ -155,18 +167,21 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // DELETE for /orders/:order_id
     // deletes the order with the provided order ID
     router.delete("/orders/:order_id", isAuthenticated, function(req, res) {
-        console.log("Deleting order ID: ", req.params.order_id);
+        logMessage('info', "Deleting order ID: " + req.params.order_id);
         var query = "DELETE FROM ?? WHERE ??=?";
         var table = ["orders", "order_id", req.params.order_id];
         query = mysql.format(query, table);
         connection.query(query, function(err, result) {
             if(err) {
+                logMessage('info', "Success executing MySQL query " + err);
                 res.json({"Error": true, "Message": "Error executing MySQL query"});
             } else {
                 if(result.affectedRows == 0) {
                     // No rows affected means no order found with that ID
+                    logMessage('error', "No order found with the given ID");
                     res.json({"Error": false, "Message": "No order found with the given ID"});
                 } else {
+                    logMessage('info', "Success executing MySQL query");
                     res.json({"Error": false, "Message": "Order deleted successfully"});
                 }
             }
@@ -176,7 +191,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // POST for /api/users/register
     // Registers a new user with a username and password
     router.post("/users/register", function(req, res) {
-        console.log("Registering user...");
+        logMessage('info', "Registering user...");
         var username = req.body.username;
         var password = req.body.password;
 
@@ -242,9 +257,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                     console.log("Secret Key:", secretKey); // Debugging line
                     console.log("Username:", rows[0].username); // Debugging line
 
-                    //const token = jwt.sign({"username": rows[0].username}, secretKey);
                     const token = generateToken(rows[0].username, secretKey);
-                    console.log("Generated Token:", token);
+                    // console.log("Generated Token:", token);
 
                     activeTokens[token] = true; // Mark the token as active
                     res.json({"Error": false, "Message": "Login successful", "Token": token});
